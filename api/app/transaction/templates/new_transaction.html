@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+{% from "_render_field.html" import render_field, render_label_input_field %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New transaction</title>
+</head>
+<body>
+
+    <form id = 'new_transaction' action = "{{url_for('transaction_bp.render_form')}}" method = "POST" enctype = "multipart/form-data" >
+
+        {{ render_field(form.transaction_type, field_class="form-control") }}
+        {{ render_field(form.asset_name, field_class="form-control") }}
+        {{ render_field(form.transaction_value, field_class="form-control") }}
+        {{ render_field(form.asset_loc, field_class="form-control") }}
+        {{ render_field(form.asset_leverage, field_class="form-control") }}
+        {{ render_field(form.capital_call_time, field_class="form-control") }}
+        {{ render_field(form.liquidity_type, field_class="form-control") }}
+
+        <button class="btn btn-dark crm-calculator-btns" id="crm_btn" name="action"> Calculate </button>
+
+
+    </form>
+
+</body>
+</html>
