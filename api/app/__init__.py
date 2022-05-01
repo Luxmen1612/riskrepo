@@ -1,17 +1,19 @@
 from flask import Flask
 import pymongo
+from dotenv import load_dotenv, dotenv_values
+import os
 
 mongodb = None
+a = os.getcwd()
+config = dotenv_values(".env")
 
 def init_app():
 
     global mongodb
 
     app = Flask(__name__)
-    mongodb = pymongo.MongoClient('mongodb+srv://draths:Bremen92@cluster0.95mle.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-    #db = mongodb['myDatabase']
-    #coll = db['deals']
 
+    mongodb = pymongo.MongoClient(config['URI'])
     from .transaction import transaction_bp
     app.register_blueprint(transaction_bp)
 

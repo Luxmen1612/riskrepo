@@ -1,7 +1,8 @@
-from wtforms import StringField, SelectField, SubmitField, FloatField, IntegerField, \
+from wtforms import StringField, SelectField, DateField, DateTimeField, SubmitField, FloatField, IntegerField, \
     BooleanField, TextAreaField, FormField, SelectMultipleField, widgets, FieldList, Form, FileField
 from wtforms.validators import DataRequired, InputRequired, NumberRange, Regexp, Length
 
+import datetime as dt
 
 fields = {
 
@@ -12,6 +13,7 @@ fields = {
     'asset_loc': StringField('Asset location'),
     'asset_leverage': FloatField('Asset leverage (new or outstanding in %)'),
     'capital_call_time': SelectField('Capital call type', choices= [('Immediate', 'Deferred')]),
-    'liquidity_type': SelectField('Asset liquidity type', choices=['Liquid', 'Semi-liquid', 'Illiquid'])
-
+    'liquidity_type': SelectField('Asset liquidity type', choices=['Liquid', 'Semi-liquid', 'Illiquid']),
+    'date': DateTimeField('Date', default = dt.datetime.today().replace(microsecond=0)),
+    'upload_memo': FileField('Investment Memo Upload')
 }

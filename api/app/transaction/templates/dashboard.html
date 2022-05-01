@@ -22,32 +22,40 @@
 
         body{
            background-color: #444;
+           color: white;
         }
 
     </style>
 </head>
 <body>
         <a class="btn" href = "{{url_for('transaction_bp.render_form')}}"> Create transaction </a>
-        <a class="btn" href = "{{url_for('transaction_bp.generate_report')}}"> Create transaction </a>
+        <a class="btn" href = "{{url_for('transaction_bp.generate_report')}}"> Generate report </a>
 
+        <div>
         <div class = "wrapper">
-        <div class = "box a"> A
+        <div class = "box a"> IRR@risk
              <div id = 'chart' class = 'chart'> </div>
         </div>
 
-        <div class = "box b"> B
+        <div class = "box b"> TVPI
              <div id = 'chart1' class = 'chart'> </div>
         </div>
 
-        <div class = "box c"> C
+        <div class = "box c"> PrivateEquity IRR Premium
              <div id = 'chart2' class = 'chart'> </div>
         </div>
 
-        <div class = "box d"> D
+        <div class = "box d"> Cashflow
              <div id = 'chart3' class = 'chart'> </div>
         </div>
 
             </div>
+
+       {% for t in table %}
+            {{ table|safe }}
+
+            {% endfor %}
+        </div>
 
 </body>
 
@@ -56,7 +64,7 @@
   var graphs = {{fig | safe}};
   var graphs1 = {{fig1 | safe}};
   var graphs2 = {{fig | safe}};
-  var graphs3=  {{fig | safe}};
+  var graphs3=  {{fig4 | safe}};
 
   Plotly.plot('chart',graphs, {});
   Plotly.plot('chart1', graphs1, {});

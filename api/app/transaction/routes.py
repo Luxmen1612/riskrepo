@@ -10,6 +10,8 @@ from plotly.graph_objs import *
 import docx
 import io
 import matplotlib.pyplot as plt
+from helpers.cf_analytics import update_cf, date_adj
+import datetime as dt
 
 db = mongodb['myDatabase']
 coll = db['deals']
@@ -29,7 +31,7 @@ def render_dashboard():
 
     deals_ser = pd.Series(values)
     liquidity_ser = pd.Series(liquidity)
-
+    cf_data = update_cf().sort_index(ascending=True)
 
     fig = px.pie(title = 'Asset overview', values = deals_ser, names=deals_ser.index.values)
     fig.update_layout({
@@ -41,9 +43,12 @@ def render_dashboard():
 
     fig1 = px.pie(title = 'Liquidity overview', values = liquidity_ser, names = liquidity_ser.index.values)
     fig1 = json.dumps(fig1, cls = plotly.utils.PlotlyJSONEncoder)
+
+    fig4 = px.line(cf_data, title = 'Cashflow')
+    fig4 = json.dumps(fig4, cls=plotly.utils.PlotlyJSONEncoder)
     #fig.show()
 
-    return render_template('dashboard.html', fig = fig, fig1 = fig1)
+    return render_template('dashboard.html', fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
 
 @transaction_bp.route("/render_form", methods = ["GET", "POST"])
 def render_form():
@@ -53,6 +58,10 @@ def render_form():
 
     if request.method == "POST":
         fund_data = form.data.copy()
+        if fund_data['transaction_type'] == 'Divestment' and fund_data['transaction_type'] > 0:
+            fund_data['transaction_amount'] = - fund_data['transaction_amount']
+        #fund_data['date'] = date_adj(fund_data['date'])
+        #fund_data['date'] = dt.datetime.today().replace(microsecond=0)
         coll.insert_one(fund_data)
 
     return render_template('new_transaction.html', form = form)
@@ -82,10 +91,10 @@ def generate_report():
     liquidity_ser = pd.Series(liquidity)
 
     memfile = io.BytesIO()
-    plt.plot(liquidity_ser)
+    plt.plot(deals_ser)
     plt.savefig(memfile)
 
-    fig = px.pie(values = deals_ser, names=deals_ser.index.values)
+    #fig = px.pie(values = deals_ser, names=deals_ser.index.values)
     p = document.add_paragraph()
     r = p.add_run()
     r.add_picture(memfile)

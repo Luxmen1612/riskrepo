@@ -8,6 +8,7 @@ transaction_args = {
     'asset_loc',
     'asset_leverage',
     'capital_call_time',
-    'liquidity_type'
-
+    'liquidity_type',
+    'date',
+    'upload_memo'
 }
