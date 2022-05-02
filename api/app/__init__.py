@@ -5,6 +5,7 @@ import os
 
 mongodb = None
 a = os.getcwd()
+print(a)
 config = dotenv_values(".env")
 
 def init_app():

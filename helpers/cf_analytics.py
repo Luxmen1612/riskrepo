@@ -33,7 +33,8 @@ def update_cf(_id = None, collection = 'deals'):
 
     cursor_cf = coll.find({}).sort('date', pymongo.ASCENDING)
     for k in cursor_cf:
-        dict[k['date']] = k['transaction_value']
+
+        dict[k['date']] = (- k['transaction_value']) if k['transaction_type'] == 'Investment' else k['transaction_value']
 
     data = pd.Series(dict)
 

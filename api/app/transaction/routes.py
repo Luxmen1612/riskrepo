@@ -2,6 +2,7 @@ from api.app import mongodb
 from api.app.transaction import transaction_bp
 from api.app.forms.form_models import new_transaction_model
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 from flask import render_template, request, redirect, url_for
 import json
@@ -12,6 +13,7 @@ import io
 import matplotlib.pyplot as plt
 from helpers.cf_analytics import update_cf, date_adj
 import datetime as dt
+from gridfs import GridFS
 
 db = mongodb['myDatabase']
 coll = db['deals']
@@ -23,6 +25,9 @@ def render_dashboard():
     liquidity = {}
     ptf_count = 0
 
+    red = 'rgb(255,0,0)'
+    blue = 'rgb(0,0,255)'
+
     for deals in coll.find():
 
         ptf_count += 1
@@ -32,6 +37,8 @@ def render_dashboard():
     deals_ser = pd.Series(values)
     liquidity_ser = pd.Series(liquidity)
     cf_data = update_cf().sort_index(ascending=True)
+
+    clrs = [red if x < 0 else blue for x in cf_data]
 
     fig = px.pie(title = 'Asset overview', values = deals_ser, names=deals_ser.index.values)
     fig.update_layout({
@@ -44,9 +51,16 @@ def render_dashboard():
     fig1 = px.pie(title = 'Liquidity overview', values = liquidity_ser, names = liquidity_ser.index.values)
     fig1 = json.dumps(fig1, cls = plotly.utils.PlotlyJSONEncoder)
 
-    fig4 = px.line(cf_data, title = 'Cashflow')
-    fig4 = json.dumps(fig4, cls=plotly.utils.PlotlyJSONEncoder)
-    #fig.show()
+    fig4 = go.Bar(x = cf_data.index.values,
+                  y = cf_data.values,
+                  marker=dict(color = clrs))
+
+    fig4 = go.Figure(data = fig4)
+    fig4 = json.dumps(fig4, cls = plotly.utils.PlotlyJSONEncoder)
+
+
+    #fig4 = px.bar(cf_data, title = 'Cashflow')
+    #fig4 = json.dumps(fig4, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render_template('dashboard.html', fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
 
@@ -54,15 +68,20 @@ def render_dashboard():
 def render_form():
 
     form = new_transaction_model()
+    file = None
     #form['asset_name'].data = 'FundRisQ S.A.' #to be used when pre-filling the form (for example when using a divestment icon next to each asset to prefill form with asset name & divestment flag)
 
     if request.method == "POST":
         fund_data = form.data.copy()
         if fund_data['transaction_type'] == 'Divestment' and fund_data['transaction_type'] > 0:
             fund_data['transaction_amount'] = - fund_data['transaction_amount']
-        #fund_data['date'] = date_adj(fund_data['date'])
-        #fund_data['date'] = dt.datetime.today().replace(microsecond=0)
-        coll.insert_one(fund_data)
+            fund_data['asset_id'] = coll.find_one(sort = [("asset_id", -1)])['asset_id'] + 1
+
+        #file = request.files['upload_memo'].
+
+        file = fund_data['upload_memo'].read()
+        storage = GridFS(db, 'deals')
+        storage.put(file)
 
     return render_template('new_transaction.html', form = form)
 
