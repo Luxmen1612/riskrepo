@@ -4,7 +4,7 @@ from api.app.forms.form_models import new_transaction_model
 import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, make_response
 import json
 import plotly
 from plotly.graph_objs import *
@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from helpers.cf_analytics import update_cf, date_adj
 import datetime as dt
 from gridfs import GridFS
+from helpers.function_hub import convert_pdf_to_text_sentences
 
 db = mongodb['myDatabase']
 coll = db['deals']
@@ -58,11 +59,12 @@ def render_dashboard():
     fig4 = go.Figure(data = fig4)
     fig4 = json.dumps(fig4, cls = plotly.utils.PlotlyJSONEncoder)
 
+    form = new_transaction_model()
 
     #fig4 = px.bar(cf_data, title = 'Cashflow')
     #fig4 = json.dumps(fig4, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template('dashboard.html', fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
+    return render_template('dashboard.html', form = form, fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
 
 @transaction_bp.route("/render_form", methods = ["GET", "POST"])
 def render_form():
@@ -75,15 +77,35 @@ def render_form():
         fund_data = form.data.copy()
         if fund_data['transaction_type'] == 'Divestment' and fund_data['transaction_type'] > 0:
             fund_data['transaction_amount'] = - fund_data['transaction_amount']
-            fund_data['asset_id'] = coll.find_one(sort = [("asset_id", -1)])['asset_id'] + 1
+        fund_data['asset_id'] = coll.find_one(sort = [("asset_id", -1)])['asset_id'] + 1
 
-        #file = request.files['upload_memo'].
+        file = request.files.get('upload_memo')
+        a = file.filename
 
-        file = fund_data['upload_memo'].read()
+        #file = fund_data['upload_memo'].read()
+        #with open(fund_data['upload_memo'], 'rb') as doc:
         storage = GridFS(db, 'deals')
-        storage.put(file)
+        storage.put(file, asset_id = fund_data['asset_id'], filename = a)
+
+        pdf = convert_pdf_to_text_sentences(file)
+        db['deals.files'].update_one({'asset_id': fund_data['asset_id']}, {"$set": {'pdf_text': pdf}})
+
+        del fund_data['upload_memo']
+
+        coll.insert_one(fund_data)
 
     return render_template('new_transaction.html', form = form)
+
+@transaction_bp.route("/download", methods = ["GET", "POST"])
+def download():
+
+    storage = GridFS(db, 'deals')
+    data = storage.get_last_version('schroder-gaia---bluetrend---de.pdf')
+    response = make_response(data.read())
+    extension = data.filename.split('.')[-1]
+    response.headers['Content-Type'] = f'application/{extension}'
+    response.headers['Content-Disposition'] = f'inline; filename={data.filename}'
+    return response
 
 @transaction_bp.route("/generate_report", methods = ["GET", "POST"])
 def generate_report():
@@ -122,6 +144,64 @@ def generate_report():
     print('Report has been generated')
 
     return redirect(url_for('transaction_bp.render_dashboard'))
+
+@transaction_bp.route("/portfolio/", methods = ["GET", "POST"])
+def portfolio():
+
+    dict = {}
+
+    form = new_transaction_model()
+    fund_data = form.data.copy()
+
+    if fund_data['funds'] != "":
+        _id = fund_data['funds']
+        asset_id = _id
+        return redirect(url_for("transaction_bp.overview", asset_id = asset_id))
+
+    else:
+
+        for k in coll.find():
+
+            dict[k['asset_name']] = {
+                'Asset Value' : k['transaction_value'],
+                'Location' : k['asset_loc'],
+                'Asset Leverage' : k['asset_leverage'],
+                'Memo': 1,
+                'Asset Id': k['asset_id']
+            }
+
+        df = pd.DataFrame(dict)
+        df = df.reset_index()
+
+        return render_template('portfolio.html', column_names = df.columns.values, row_data=df.values, zip=zip, len = len(df.columns.values))
+
+@transaction_bp.route("/overview/<asset_id>", methods = ["GET"])
+def overview(asset_id):
+
+    dict = {}
+    k = coll.find_one({'asset_id': int(asset_id)})
+
+    dict[k['asset_name']] = {
+            'Asset Value' : k['transaction_value'],
+            'Location' : k['asset_loc'],
+            'Asset Leverage' : k['dddddssddd'],
+            'Memo': 1,
+            'Asset Id': k['asset_id']
+        }
+
+    df = pd.DataFrame(dict)
+    df = df.reset_index()
+
+    return render_template('portfolio.html', column_names = df.columns.values, row_data=df.values, zip=zip, len = len(df.columns.values))
+
+@transaction_bp.route("/home", methods = ["GET", "POST"])
+def home():
+
+    dict = {}
+
+    for deals in coll:
+        dict[deals]
+
 
 
 

@@ -10,5 +10,6 @@ transaction_args = {
     'capital_call_time',
     'liquidity_type',
     'date',
-    'upload_memo'
+    'upload_memo',
+    'funds',
 }
