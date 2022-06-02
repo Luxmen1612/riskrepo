@@ -197,10 +197,27 @@ def overview(asset_id):
 @transaction_bp.route("/home", methods = ["GET", "POST"])
 def home():
 
-    dict = {}
+    funds = coll.distinct("fund_subfund_name")
+    portfolio = {}
+    master_df = pd.DataFrame()
 
-    for deals in coll:
-        dict[deals]
+    for f in funds:
+        AuM = 0
+        Leverage = 0
+
+        for deals in coll:
+            if deals['fund_subfund_name'] == f:
+                AuM += deals['transaction_value']
+                Leverage += deals['asset_leverage']
+
+        portfolio[f] = {'AuM': AuM, 'Leverage': Leverage}
+        df = pd.DataFrame(data = portfolio.values(), index = portfolio.keys())
+        #master_df.append(df)
+        master_df = pd.concat([master_df, df])
+
+    news_coll = db['news']
+
+
 
 
 
