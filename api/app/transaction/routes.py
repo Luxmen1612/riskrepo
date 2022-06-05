@@ -184,7 +184,7 @@ def overview(asset_id):
     dict[k['asset_name']] = {
             'Asset Value' : k['transaction_value'],
             'Location' : k['asset_loc'],
-            'Asset Leverage' : k['dddddssddd'],
+            'Asset Leverage' : k['asset_leverage'],
             'Memo': 1,
             'Asset Id': k['asset_id']
         }
@@ -198,10 +198,12 @@ def overview(asset_id):
 def home():
 
     dict = {}
+    x = 0
 
-    for deals in coll:
-        dict[deals]
+    for deals in coll.find():
+        x = deals["transaction_value"]
 
+    return render_template("home.html", value = x)
 
 
 
