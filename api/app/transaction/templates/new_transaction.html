@@ -7,6 +7,12 @@
 </head>
 <body>
 
+    {{ ckeditor.load()}}
+    <form method = "post">
+        {{ ckeditor.create() }}
+        <input type ="submit">
+    </form>
+
     <form id = 'new_transaction' action = "{{url_for('transaction_bp.render_form')}}" method = "POST" enctype = "multipart/form-data" >
 
         {{ render_field(form.transaction_type, field_class="form-control") }}

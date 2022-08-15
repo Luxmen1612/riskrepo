@@ -15,6 +15,7 @@ from helpers.cf_analytics import update_cf, date_adj
 import datetime as dt
 from gridfs import GridFS
 from helpers.function_hub import convert_pdf_to_text_sentences
+from api.app import ckeditor
 
 db = mongodb['myDatabase']
 coll = db['deals']
@@ -64,7 +65,7 @@ def render_dashboard():
     #fig4 = px.bar(cf_data, title = 'Cashflow')
     #fig4 = json.dumps(fig4, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template('dashboard.html', form = form, fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
+    return render_template('dashboard.html', ckeditor = ckeditor, form = form, fig = fig, fig1 = fig1, fig4 = fig4, table = [deals_ser.to_frame().to_html(classes = 'data')])
 
 @transaction_bp.route("/render_form", methods = ["GET", "POST"])
 def render_form():
@@ -225,8 +226,25 @@ def home():
 
     return render_template("home.html", value = x)
 
+@transaction_bp.route("/transaction/video", methods = ["GET", "POST"])
+def video():
 
+    return render_template('video_test.html')
 
+@transaction_bp.route("/transaction/prospectus", methods = ["GET", "POST"])
+def prospectus():
+
+    data = None
+    return render_template('prospectus.html', data = data)
+
+@transaction_bp.route("/transaction/edit_prospectus/<id>", methods = ["GET"])
+def edit(id):
+
+    coll = db['prospectus']
+
+    data = coll.find_one({"type_id": id})["investment_strategy"]
+
+    return render_template('prospectus.html', data = data)
 
 
 

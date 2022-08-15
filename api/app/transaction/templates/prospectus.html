@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% from "_render_field.html" import render_field, render_label_input_field %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generate prospectus</title>
+    <style>
+        #wrapper {
+            border: 1px solid blue;
+
+            }
+
+        #div1 {
+            display: inline-block;
+            width:120px;
+            height: 500;
+            border: 1px solid red;
+            }
+
+        #div2 {
+            display: inline-block;
+            width:1160px;
+            height: 500px;
+            border: 1px solid green;
+            }
+    </style>
+</head>
+<body>
+
+
+
+    <div id = "wrapper">
+        <div id="div1">
+            <a href = "{{url_for('transaction_bp.edit', id = 'investment_strategy')}}"> Investment Objectives </a>
+        </div>
+
+        <div id = "div2">
+
+            {{ ckeditor.load() }}
+            {{ ckeditor.create(value = data) }}
+
+        </div>
+    </div>
+
+</body>
+</html>
