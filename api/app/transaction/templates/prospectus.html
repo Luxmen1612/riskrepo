@@ -36,8 +36,15 @@
 
         <div id = "div2">
 
-            {{ ckeditor.load() }}
-            {{ ckeditor.create(value = data) }}
+
+
+            <form method = post enctype="multipart/form-data">
+                {{ ckeditor.load() }}
+                {{ ckeditor.create(value = data) }}
+                <p><input type = submit value = "Save"> </p>
+
+            </form>
+
 
         </div>
     </div>

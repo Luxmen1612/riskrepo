@@ -33,4 +33,5 @@ fields = {
     'date': DateTimeField('Date', default = dt.datetime.today().replace(microsecond=0)),
     'upload_memo': FileField('Investment Memo Upload'),
     'funds': SelectField('Choose your subfund', choices  = fund_list(coll)),
+    'investment_objectives': StringField('Add investment objectives')
 }

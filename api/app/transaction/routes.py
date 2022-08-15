@@ -237,12 +237,20 @@ def prospectus():
     data = None
     return render_template('prospectus.html', data = data)
 
-@transaction_bp.route("/transaction/edit_prospectus/<id>", methods = ["GET"])
+@transaction_bp.route("/transaction/edit_prospectus/<id>", methods = ["GET", "POST"])
 def edit(id):
 
     coll = db['prospectus']
 
     data = coll.find_one({"type_id": id})["investment_strategy"]
+    _id = 1#some id
+
+    if request.method == "POST":
+
+        amended_data = request.form.get('ckeditor')
+
+        if amended_data != data:
+            coll.update_one()
 
     return render_template('prospectus.html', data = data)
 

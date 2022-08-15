@@ -14,3 +14,12 @@ def new_transaction_model():
     transaction_form = TransactionForm()
 
     return transaction_form
+
+def new_pros_model():
+    class ProspectusForm(FlaskForm):
+        for k in form_content.prospectus_args:
+            locals()[k] = form_fields.fields[k]
+
+    prospectus_form = ProspectusForm()
+
+    return prospectus_form

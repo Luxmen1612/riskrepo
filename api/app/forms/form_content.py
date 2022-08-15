@@ -13,3 +13,8 @@ transaction_args = {
     'upload_memo',
     'funds',
 }
+
+prospectus_args = {
+
+    "investment_objectives"
+}
